@@ -8,12 +8,15 @@
 import UIKit
 import RealmSwift   // ←追加
 
-class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class ViewController: UIViewController, UITableViewDelegate, UISearchBarDelegate, UITableViewDataSource {
     @IBOutlet weak var tableView: UITableView!
 
+    @IBOutlet weak var searchBar: UISearchBar!
     // Realmインスタンスを取得する
     let realm = try! Realm()  // ←追加
-
+    //var items = []
+    //var currentItems = [String]()
+    
     // DB内のタスクが格納されるリスト。
     // 日付の近い順でソート：昇順
     // 以降内容をアップデートするとリスト内は自動的に更新される。
@@ -26,7 +29,27 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         tableView.delegate = self
         tableView.dataSource = self
     }
-
+    
+    func searchBar(_ searchBar: UISearchBar,selectedScopeButtonIndexDidChange selectedScope: Int){
+        
+    }
+    
+    //  検索バーに入力があったら呼ばれる
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        print("testsearch")
+        /*
+        guard !searchText.isEmpty else {
+            currentItems = items
+            tableView.reloadData()
+            return
+        }
+        currentItems = items.filter({ item -> Bool in
+            item.title.lowercased().contains(searchText.lowercased())
+        })
+         */
+        tableView.reloadData()
+        
+    }
     // データの数（＝セルの数）を返すメソッド
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return taskArray.count  // ←修正する
@@ -42,10 +65,13 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
 
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd HH:mm"
-
+        
         let dateString:String = formatter.string(from: task.date)
         cell.detailTextLabel?.text = dateString
         // --- ここまで追加 ---
+        
+        //let row_item = taskArray[indexPath.row]
+        //cell.setArticle(item: row_item)
         return cell
     }
 
