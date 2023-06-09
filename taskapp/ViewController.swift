@@ -14,6 +14,11 @@ class ViewController: UIViewController, UITableViewDelegate, UISearchBarDelegate
     @IBOutlet weak var searchBar: UISearchBar!
     // Realmインスタンスを取得する
     let realm = try! Realm()  // ←追加
+    
+    var chats:[String] = []
+    
+    var searchResults = try! Realm().objects(Task.self).sorted(byKeyPath: "date", ascending: true)  // ←追加
+    var isSearching = false
     //var items = []
     //var currentItems = [String]()
     
@@ -29,36 +34,75 @@ class ViewController: UIViewController, UITableViewDelegate, UISearchBarDelegate
         tableView.delegate = self
         tableView.dataSource = self
     }
-    
+    /*
     func searchBar(_ searchBar: UISearchBar,selectedScopeButtonIndexDidChange selectedScope: Int){
-        
-    }
-    
-    //  検索バーに入力があったら呼ばれる
-    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        print("testsearch")
-        /*
-        guard !searchText.isEmpty else {
-            currentItems = items
+        if searchBar.text == "" {
+            isSearching = false
             tableView.reloadData()
-            return
+            print(isSearching)
+        } else {
+            searchResults = realm.objects(Task.self).where({$0.category == "category1"})
+            isSearching = true
+            tableView.reloadData()
+            print(isSearching)
         }
-        currentItems = items.filter({ item -> Bool in
-            item.title.lowercased().contains(searchText.lowercased())
-        })
-         */
-        tableView.reloadData()
         
     }
+    */
+    //  検索バーに入力があったら呼ばれる
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+
+        if searchBar.text == "" {
+            isSearching = false
+            tableView.reloadData()
+            print(isSearching)
+        } else {
+            searchResults = realm.objects(Task.self).where({$0.category == searchBar.text!})
+            isSearching = true
+            tableView.reloadData()
+            print(isSearching)
+        }
+        //tableView.reloadData()
+        
+    }
+     
     // データの数（＝セルの数）を返すメソッド
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return taskArray.count  // ←修正する
+        if isSearching == true{
+            return searchResults.count
+        }else{
+            return taskArray.count  // ←修正する
+        }
     }
 
     // 各セルの内容を返すメソッド
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         // 再利用可能な cell を得る
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
+        
+        if isSearching{
+            // Cellに値を設定する  --- ここから ---
+            let task = searchResults[indexPath.row]
+            cell.textLabel?.text = task.title
+
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd HH:mm"
+            
+            let dateString:String = formatter.string(from: task.date)
+            cell.detailTextLabel?.text = dateString
+        }else{
+            // Cellに値を設定する  --- ここから ---
+            let task = taskArray[indexPath.row]
+            cell.textLabel?.text = task.title
+
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd HH:mm"
+            
+            let dateString:String = formatter.string(from: task.date)
+            cell.detailTextLabel?.text = dateString
+        }
+        /*
         // Cellに値を設定する  --- ここから ---
         let task = taskArray[indexPath.row]
         cell.textLabel?.text = task.title
@@ -68,10 +112,10 @@ class ViewController: UIViewController, UITableViewDelegate, UISearchBarDelegate
         
         let dateString:String = formatter.string(from: task.date)
         cell.detailTextLabel?.text = dateString
+        */
+        
         // --- ここまで追加 ---
         
-        //let row_item = taskArray[indexPath.row]
-        //cell.setArticle(item: row_item)
         return cell
     }
 
